@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Randomly Generated Platformer</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="400" height="400"></canvas>
+
+    <script>
+      // Get the canvas element and its context
+      var canvas = document.getElementById("myCanvas");
+      var ctx = canvas.getContext("2d");
+
+      // Define the player object
+      var player = {
+        x: 50,
+        y: 350,
+        width: 20,
+        height: 20,
+        speed: 5,
+        jumpHeight: 10,
+        isJumping: false,
+        jumpCount: 0,
+        jumpLimit: 10,
+      };
+
+      // Define the platform object
+      var platform = {
+        x: 0,
+        y: canvas.height - 20,
+        width: canvas.width,
+        height: 20,
+        speed: 2,
+      };
+
+      // Define the array of platforms
+      var platforms = [platform];
+
+      // Generate new platforms
+      function generatePlatforms() {
+        var lastPlatform = platforms[platforms.length - 1];
+        if (lastPlatform.y > 100) {
+          var newPlatform = {
+            x: Math.random() * (canvas.width - 50),
+            y: lastPlatform.y - Math.random() * 50 - 50,
+            width: Math.random() * 50 + 50,
+            height: 10,
+            speed: 2,
+          };
+          platforms.push(newPlatform);
+        }
+      }
+
+      // Update the game state
+      function update() {
+        // Move the player left or right
+        if (keys.left && player.x > 0) {
+          player.x -= player.speed;
+        } else if (keys.right && player.x + player.width < canvas.width) {
+          player.x += player.speed;
+        }
+
+        // Jump the player
+        if (keys.up && !player.isJumping) {
+          player.isJumping = true;
+          player.jumpCount = 0;
+        }
+
+        if (player.isJumping) {
+          player.y -= player.jumpHeight - player.jumpCount;
+          player.jumpCount++;
+
+          if (player.jumpCount > player.jumpLimit) {
+            player.isJumping = false;
+            player.jumpCount = 0;
+          }
+        } else {
+          player.y += player.speed;
+        }
+
+        // Move the platforms upwards
+        for (var i = 0; i < platforms.length; i++) {
+          platforms[i].y -= platforms[i].speed;
+        }
+
+        // Remove platforms that are off the screen
+        if (platforms[0].y + platforms[0].height < 0) {
+          platforms.shift();
+        }
+
+        // Generate new platforms
+        generatePlatforms();
+
+        // Check for collisions between the player and the platforms
+        for (var i = 0; i < platforms.length; i++) {
+          var p = platforms[i];
+          if (
+            player.x + player.width > p.x &&
+            player.x < p.x + p.width &&
+            player.y + player.height > p.y &&
+            player.y < p.y +
